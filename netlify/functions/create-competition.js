@@ -3,9 +3,13 @@ exports.handler = async function handler(event) {
     return response(405, { message: 'Method not allowed.' })
   }
 
-  const suppliedPassKey = event.headers['x-admin-passkey']
-  if (!suppliedPassKey || suppliedPassKey !== process.env.WOM_GROUP_VERIFICATION_CODE) {
-    return response(401, { message: 'Invalid admin pass-key.' })
+  const suppliedGroupCode = event.headers['x-admin-passkey']?.trim()
+  const groupVerificationCode = process.env.WOM_GROUP_VERIFICATION_CODE?.trim()
+  if (!groupVerificationCode) {
+    return response(500, { message: 'WOM_GROUP_VERIFICATION_CODE is not configured on the server.' })
+  }
+  if (!suppliedGroupCode || suppliedGroupCode !== groupVerificationCode) {
+    return response(401, { message: 'Invalid group code.' })
   }
 
   let body
@@ -34,7 +38,7 @@ exports.handler = async function handler(event) {
         startsAt: body.startsAt,
         endsAt: body.endsAt,
         groupId: 7020,
-        groupVerificationCode: process.env.WOM_GROUP_VERIFICATION_CODE,
+        groupVerificationCode,
       }),
     })
 

@@ -73,7 +73,7 @@ function getCompetitionsForWeek(competitions, dateString) {
 
 function AdminPanel({ existingCompetitions }) {
   const [authenticated, setAuthenticated] = useState(() => sessionStorage.getItem('wom-admin') === 'true')
-  const [passKey, setPassKey] = useState(() => sessionStorage.getItem('wom-admin-passkey') || '')
+  const [passKey, setPassKey] = useState(() => sessionStorage.getItem('wom-admin-group-code') || '')
   const [mode, setMode] = useState('skill')
   const [metric, setMetric] = useState(SKILLS[0])
   const [status, setStatus] = useState(null)
@@ -93,8 +93,11 @@ function AdminPanel({ existingCompetitions }) {
         headers: { 'Content-Type': 'application/json', 'x-admin-passkey': passKey },
         body: JSON.stringify({ action: 'authenticate' }),
       })
-      if (!response.ok) throw new Error('Invalid pass-key.')
-      sessionStorage.setItem('wom-admin-passkey', passKey)
+      if (!response.ok) {
+        const data = await response.json().catch(() => ({}))
+        throw new Error(data.message || 'Invalid group code.')
+      }
+      sessionStorage.setItem('wom-admin-group-code', passKey)
       sessionStorage.setItem('wom-admin', 'true')
       setAuthenticated(true)
       setStatus(null)
@@ -139,10 +142,10 @@ function AdminPanel({ existingCompetitions }) {
       <section className="admin-panel login-panel">
         <div className="section-kicker">Restricted area</div>
           <h1>Admin access</h1>
-        <p>Use the admin pass-key to publish a new competition.</p>
+        <p>Use the WiseOldMan group code to publish a new competition.</p>
         <form onSubmit={login} className="stack-form">
-          <label htmlFor="pass-key">Pass-key</label>
-          <input id="pass-key" type="password" value={passKey} onChange={event => setPassKey(event.target.value)} autoFocus />
+          <label htmlFor="group-code">Group code</label>
+          <input id="group-code" type="password" value={passKey} onChange={event => setPassKey(event.target.value)} autoFocus />
           <button type="submit">Log in</button>
         </form>
         {status?.type === 'error' && <p className="form-message error">{status.message}</p>}
