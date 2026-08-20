@@ -1,4 +1,4 @@
-exports.handler = async function handler(event) {
+export async function handler(event) {
   if (event.httpMethod !== 'POST') {
     return response(405, { message: 'Method not allowed.' })
   }
