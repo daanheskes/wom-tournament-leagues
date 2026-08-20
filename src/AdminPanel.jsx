@@ -49,6 +49,24 @@ function getCompetitionDates(existingCompetitions = [], additionalWeeks = 0) {
   return { startsAt: nextWednesday.toISOString(), endsAt: nextMonday.toISOString() }
 }
 
+function getCurrentWeekDates() {
+  const now = new Date()
+  const start = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate(), 10, 30))
+  const daysSinceWednesday = (start.getUTCDay() - 3 + 7) % 7
+  start.setUTCDate(start.getUTCDate() - daysSinceWednesday)
+  if (start > now) start.setUTCDate(start.getUTCDate() - 7)
+
+  return shiftWeek(start, 0)
+}
+
+function shiftWeek(startDate, weeks) {
+  const start = new Date(startDate)
+  start.setUTCDate(start.getUTCDate() + weeks * 7)
+  const end = new Date(start)
+  end.setUTCDate(end.getUTCDate() + 5)
+  return { startsAt: start.toISOString(), endsAt: end.toISOString() }
+}
+
 function displayMetric(metric) {
   return metric.split('_').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ')
 }
@@ -82,8 +100,11 @@ function AdminPanel({ existingCompetitions }) {
   const [metric, setMetric] = useState(SKILLS[0])
   const [status, setStatus] = useState(null)
   const [creating, setCreating] = useState(false)
-  const [additionalWeeks, setAdditionalWeeks] = useState(0)
-  const dates = getCompetitionDates(existingCompetitions, additionalWeeks)
+  const [weekSelection, setWeekSelection] = useState({ type: 'planned', offset: 0 })
+  const plannedDates = getCompetitionDates(existingCompetitions, weekSelection.type === 'planned' ? weekSelection.offset : 0)
+  const dates = weekSelection.type === 'current'
+    ? shiftWeek(new Date(getCurrentWeekDates().startsAt), weekSelection.offset)
+    : plannedDates
   const competitionsInSelectedWeek = getCompetitionsForWeek(existingCompetitions, dates.startsAt)
   const competitionTitle = dates
     ? `${displayMetric(metric)} | ${mode === 'skill' ? 'Skill' : 'Boss'} of the week #${getWeekNumber(dates.startsAt)}`
@@ -174,9 +195,9 @@ function AdminPanel({ existingCompetitions }) {
       <form onSubmit={createCompetition} className="creation-form">
         <p>Automatic title: <strong>{competitionTitle}</strong></p>
         <div>
-          <button type="button" onClick={() => setAdditionalWeeks(additionalWeeks - 1)}>-1 week</button>
-          <button type="button" onClick={() => setAdditionalWeeks(0)}>Current week</button>
-          <button type="button" onClick={() => setAdditionalWeeks(additionalWeeks + 1)}>+1 week</button>
+          <button type="button" onClick={() => setWeekSelection(selection => ({ ...selection, offset: selection.offset - 1 }))}>-1 week</button>
+          <button type="button" onClick={() => setWeekSelection({ type: 'current', offset: 0 })}>Current week</button>
+          <button type="button" onClick={() => setWeekSelection(selection => ({ ...selection, offset: selection.offset + 1 }))}>+1 week</button>
         </div>
         <label htmlFor="competition-metric">{mode === 'skill' ? 'Skill' : 'Boss'}</label>
         <select id="competition-metric" value={metric} onChange={event => setMetric(event.target.value)}>
