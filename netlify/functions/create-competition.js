@@ -5,6 +5,12 @@ exports.handler = async function handler(event) {
 
   const suppliedGroupCode = (event.headers['x-admin-passkey'] || event.headers['X-Admin-Passkey'])?.trim()
   const groupVerificationCode = process.env.WOM_GROUP_VERIFICATION_CODE?.trim()
+  console.info('Group code authentication check', {
+    suppliedCodePresent: Boolean(suppliedGroupCode),
+    suppliedCodeLength: suppliedGroupCode?.length || 0,
+    configuredCodePresent: Boolean(groupVerificationCode),
+    configuredCodeLength: groupVerificationCode?.length || 0,
+  })
   if (!groupVerificationCode) {
     return response(500, { message: 'WOM_GROUP_VERIFICATION_CODE is not configured on the server.' })
   }
