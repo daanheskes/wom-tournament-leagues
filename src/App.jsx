@@ -160,21 +160,9 @@ function App() {
   }
 
   function calculateRankPoints(rank) {
-    let points = 0
+    const pointsMap = [1.25, 1.0, 0.8, 0.6, 0.4, 0.3, 0.2, 0.15, 0.1, 0.05]; // Bonus points for ranks 1 till 10
 
-    if (rank === 1) {
-      points = 1.25
-    } else if (rank === 2) {
-      points = 1
-    } else if (rank === 3) {
-      points = 0.75
-    } if (rank === 4) {
-      points = 0.5
-    } if (rank === 5) {
-      points = 0.25
-    }
-
-    return points
+    return pointsMap[rank - 1] || 0;
   }
 
   function calculateXpSharePoints(participantXpGained) {
