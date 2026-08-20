@@ -3,7 +3,7 @@ exports.handler = async function handler(event) {
     return response(405, { message: 'Method not allowed.' })
   }
 
-  const suppliedGroupCode = event.headers['x-admin-passkey']?.trim()
+  const suppliedGroupCode = (event.headers['x-admin-passkey'] || event.headers['X-Admin-Passkey'])?.trim()
   const groupVerificationCode = process.env.WOM_GROUP_VERIFICATION_CODE?.trim()
   if (!groupVerificationCode) {
     return response(500, { message: 'WOM_GROUP_VERIFICATION_CODE is not configured on the server.' })

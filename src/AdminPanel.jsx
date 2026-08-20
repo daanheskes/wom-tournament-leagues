@@ -95,6 +95,7 @@ function AdminPanel({ existingCompetitions }) {
       })
       if (!response.ok) {
         const data = await response.json().catch(() => ({}))
+        if (response.status === 404) throw new Error('Netlify Function not found. Deploy the site with the Netlify Function enabled.')
         throw new Error(data.message || 'Invalid group code.')
       }
       sessionStorage.setItem('wom-admin-group-code', passKey)
