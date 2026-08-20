@@ -71,6 +71,10 @@ function getCompetitionsForWeek(competitions, dateString) {
   return competitions.filter(competition => getWeekKey(competition.startsAt) === weekKey)
 }
 
+function normalizeGroupCode(value) {
+  return value.replace(/\D/g, '')
+}
+
 function AdminPanel({ existingCompetitions }) {
   const [authenticated, setAuthenticated] = useState(() => sessionStorage.getItem('wom-admin') === 'true')
   const [passKey, setPassKey] = useState(() => sessionStorage.getItem('wom-admin-group-code') || '')
@@ -146,7 +150,7 @@ function AdminPanel({ existingCompetitions }) {
         <p>Use the WiseOldMan group code to publish a new competition.</p>
         <form onSubmit={login} className="stack-form">
           <label htmlFor="group-code">Group code</label>
-          <input id="group-code" type="password" value={passKey} onChange={event => setPassKey(event.target.value)} autoFocus />
+          <input id="group-code" type="password" inputMode="numeric" value={passKey} onChange={event => setPassKey(normalizeGroupCode(event.target.value))} autoFocus />
           <button type="submit">Log in</button>
         </form>
         {status?.type === 'error' && <p className="form-message error">{status.message}</p>}

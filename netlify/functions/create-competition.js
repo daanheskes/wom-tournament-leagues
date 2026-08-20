@@ -3,8 +3,8 @@ export async function handler(event) {
     return response(405, { message: 'Method not allowed.' })
   }
 
-  const suppliedGroupCode = (event.headers['x-admin-passkey'] || event.headers['X-Admin-Passkey'])?.trim()
-  const groupVerificationCode = process.env.WOM_GROUP_VERIFICATION_CODE?.trim()
+  const suppliedGroupCode = normalizeGroupCode(event.headers['x-admin-passkey'] || event.headers['X-Admin-Passkey'])
+  const groupVerificationCode = normalizeGroupCode(process.env.WOM_GROUP_VERIFICATION_CODE)
   console.info('Group code authentication check', {
     suppliedCodePresent: Boolean(suppliedGroupCode),
     suppliedCodeLength: suppliedGroupCode?.length || 0,
@@ -61,4 +61,8 @@ function response(statusCode, body) {
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(body),
   }
+}
+
+function normalizeGroupCode(value) {
+  return value?.replace(/\D/g, '') || ''
 }
