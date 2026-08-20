@@ -3,6 +3,7 @@ import './App.scss'
 
 import Participants from './Participants'
 import TournamentSelect from './TournamentSelect'
+import AdminPanel from './AdminPanel'
 
 function App() {
   const groupId = 7020
@@ -10,6 +11,7 @@ function App() {
 
   const [loading, setLoading] = useState(false)
   const [tournaments, setTournaments] = useState([])
+  const [groupCompetitions, setGroupCompetitions] = useState([])
   const [inputState, setInputState] = useState("")
   const [tournamentId, setTournamentId] = useState(null)
   const [tournamentData, setTournamentData] = useState(null)
@@ -17,6 +19,7 @@ function App() {
   const [totalStandings, setTotalStandings] = useState([])
   const [addedTournaments, setAddedTournaments] = useState([])
   const [participantsToShow, setParticipantsToShow] = useState(35)
+  const [activeTab, setActiveTab] = useState('results')
 
   const optionRef = useRef(null)
 
@@ -24,6 +27,7 @@ function App() {
     fetch(`https://api.wiseoldman.net/v2/groups/${groupId}/competitions`)
     .then(response => response.json())
     .then(data => {
+      setGroupCompetitions(data)
       let fetchedTournaments = []
       data.filter(x => x.title.includes("Skill")).sort((a, b) => a.id - b.id).forEach((x, i) => {
         if (i === 0) setInputState(x.id)
@@ -53,6 +57,11 @@ function App() {
 
   return (
    <>
+    <nav className="tabs" aria-label="Hoofdnavigatie">
+      <button type="button" className={activeTab === 'results' ? 'active' : ''} onClick={() => setActiveTab('results')}>Results</button>
+      <button type="button" className={activeTab === 'admin' ? 'active' : ''} onClick={() => setActiveTab('admin')}>Admin</button>
+    </nav>
+    {activeTab === 'admin' ? <AdminPanel existingCompetitions={groupCompetitions} /> : <>
     <TournamentSelect tournaments={tournaments} selectTournament={selectTournament} addedTournaments={addedTournaments} optionRef={optionRef} />
     <p>{addedTournaments.length} Tournament{addedTournaments.length !== 1 ? "s" : ""} added:</p>
     <ol>
@@ -90,7 +99,8 @@ function App() {
       ) : null
     }
     
-   </>
+    </>}
+     </>
   )
 
   function resetAll() {
@@ -178,9 +188,6 @@ function App() {
     return tournamentData.participations.reduce((acc, curr) => acc + curr.progress.gained, 0)
   }
 
-  function formatNumber(number) {
-    return new Intl.NumberFormat("en-EN").format(number)
-  }
 }
 
 export default App
